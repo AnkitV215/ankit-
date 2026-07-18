@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ankit Varghade — CV // dev</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+  :root{
+    --void:#05070a;
+    --panel:#0d1117ee;
+    --panel-solid:#0d1117;
+    --cyan:#4fd8ff;
+    --violet:#a78bfa;
+    --amber:#ffb454;
+    --green:#7ee787;
+    --ink:#e6edf3;
+    --fog:#7d8590;
+    --line:#ffffff14;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--void); color:var(--ink);
+    font-family:'JetBrains Mono', monospace;
+    overflow-x:hidden;
+  }
+  #bgcanvas{position:fixed; inset:0; z-index:0; pointer-events:none;}
+  .scanline{
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    background:repeating-linear-gradient(to bottom, transparent 0, transparent 2px, #ffffff05 3px, transparent 4px);
+    mix-blend-mode:overlay;
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 40%, transparent 40%, #05070a 100%);
+  }
+
+  .wrap{position:relative; z-index:3; max-width:760px; margin:0 auto; padding:0 32px;}
+  section{padding:130px 0;}
+  section:first-of-type{padding-top:0; min-height:100vh; display:flex; flex-direction:column; justify-content:center;}
+
+  .eyebrow{
+    font-size:12px; letter-spacing:0.04em; color:var(--fog); margin-bottom:20px;
+  }
+  .eyebrow .n{color:var(--violet);}
+
+  h1{font-size:clamp(30px,5.6vw,52px); font-weight:600; line-height:1.15; letter-spacing:-0.01em; margin-bottom:10px;}
+  h2{font-size:26px; font-weight:600; margin-bottom:36px; letter-spacing:-0.01em;}
+
+  /* terminal hero */
+  .term{
+    border:1px solid var(--line); border-radius:10px; background:var(--panel);
+    backdrop-filter:blur(10px); overflow:hidden; box-shadow:0 30px 80px -30px #000c;
+  }
+  .term-bar{
+    display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line);
+  }
+  .dot{width:10px; height:10px; border-radius:50%;}
+  .dot.r{background:#ff5f57;} .dot.y{background:#febc2e;} .dot.g{background:#28c840;}
+  .term-title{margin-left:10px; font-size:11px; color:var(--fog);}
+  .term-body{padding:26px 22px; font-size:14.5px; line-height:1.9; min-height:180px;}
+  .term-body .prompt{color:var(--green);}
+  .term-body .out{color:var(--ink);}
+  .term-body .comment{color:var(--fog);}
+  .cursor{display:inline-block; width:8px; height:16px; background:var(--cyan); vertical-align:middle; animation:blink 1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+
+  p{font-size:14.5px; line-height:1.85; color:var(--fog); max-width:560px;}
+  .keyword{color:var(--violet);}
+  .string{color:var(--amber);}
+  .fn{color:var(--cyan);}
+
+  /* about as comment block */
+  .comment-block{
+    border-left:2px solid var(--line); padding-left:20px; font-size:14.5px; line-height:1.9; color:var(--fog);
+  }
+  .comment-block .m{color:var(--fog); opacity:0.6;}
+
+  /* experience as git log */
+  .commit{
+    display:grid; grid-template-columns:96px 1fr; gap:20px;
+    padding:24px 0; border-top:1px solid var(--line); position:relative;
+  }
+  .commit:last-child{border-bottom:1px solid var(--line);}
+  .commit .hash{color:var(--violet); font-size:12.5px; padding-top:2px;}
+  .commit .date{color:var(--fog); font-size:11px; margin-top:6px;}
+  .commit h3{font-size:16px; font-weight:600; margin-bottom:6px; color:var(--ink);}
+  .commit .role{color:var(--cyan); font-size:12.5px; margin-bottom:10px;}
+  .commit p{font-size:13.5px;}
+  .commit .diff{font-size:12px; margin-top:10px; color:var(--fog);}
+  .diff .plus{color:var(--green);}
+
+  /* skills as imports */
+  .import-line{font-size:14.5px; line-height:2.1; color:var(--fog);}
+  .import-line .k{color:var(--violet);}
+  .import-line .b{color:var(--cyan);}
+  .import-line .s{color:var(--amber);}
+  .skills-groups{display:flex; flex-direction:column; gap:4px; margin-top:8px;}
+
+  /* projects as repo cards */
+  .repo{
+    border:1px solid var(--line); border-radius:8px; padding:20px 22px; margin-bottom:14px;
+    background:#0d111799; transition:border-color .2s, transform .2s;
+  }
+  .repo:hover{border-color:#4fd8ff44; transform:translateY(-2px);}
+  .repo-top{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .repo-icon{color:var(--cyan); font-size:14px;}
+  .repo h3{font-size:15.5px; font-weight:600; color:var(--ink);}
+  .repo .lang{font-size:11px; color:var(--amber); margin-left:auto;}
+  .repo p{font-size:13.5px; margin-bottom:0;}
+
+  /* contact as commands */
+  .cmd-list{display:flex; flex-direction:column; gap:16px; margin-top:24px;}
+  .cmd-list a{
+    display:flex; align-items:center; gap:12px; text-decoration:none;
+    font-size:15px; color:var(--ink); border:1px solid var(--line); border-radius:8px;
+    padding:14px 18px; transition:border-color .2s, background .2s;
+  }
+  .cmd-list a:hover{border-color:#4fd8ff55; background:#4fd8ff0a;}
+  .cmd-list .p{color:var(--green);}
+
+  .icon-row{display:flex; gap:16px; margin-top:24px; justify-content:center;}
+  .icon-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:56px; height:56px; border:1px solid var(--line); border-radius:10px;
+    background:#0d111799; transition:border-color .2s, background .2s, transform .2s;
+  }
+  .icon-btn:hover{border-color:#4fd8ff66; background:#4fd8ff0f; transform:translateY(-2px);}
+  .icon-btn svg{width:22px; height:22px;}
+  .icon-btn .lbl{
+    position:absolute; margin-top:70px; font-size:10px; color:var(--fog);
+    letter-spacing:0.05em; opacity:0; transition:opacity .2s;
+  }
+  .contact-cta{text-align:center; margin-top:10px;}
+  .contact-cta .small{
+    font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--fog);
+    margin-bottom:12px;
+  }
+  .contact-cta .large{
+    font-size:clamp(24px,4.2vw,38px); font-weight:600; color:var(--ink);
+    line-height:1.2; letter-spacing:-0.01em; margin-bottom:8px;
+  }
+  .contact-cta .medium{
+    font-size:15px; color:var(--fog); line-height:1.7;
+    max-width:520px; margin:0 auto 8px;
+  }
+
+  footer{
+    padding:36px 0 60px; margin-top:40px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11.5px; color:var(--fog); gap:16px; flex-wrap:wrap;
+  }
+  footer .right{color:var(--fog);}
+  footer .right .sep{color:var(--violet); margin:0 8px;}
+
+  .note{
+    font-size:11px; color:var(--fog); border-left:2px solid var(--amber);
+    padding:10px 16px; margin-top:30px; max-width:520px; line-height:1.7; background:#ffffff05;
+  }
+
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:8;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px 40px; border-bottom:1px solid transparent;
+    backdrop-filter:blur(6px);
+  }
+  nav .logo{font-size:13px; color:var(--ink); font-weight:600;}
+  nav .logo .p{color:var(--green);}
+  nav .links{display:flex; gap:26px;}
+  nav .links a{font-size:11.5px; color:var(--fog); text-decoration:none;}
+  nav .links a:hover{color:var(--cyan);}
+  nav .links a .idx{color:var(--violet); margin-right:4px;}
+
+  @media(max-width:640px){
+    .commit{grid-template-columns:1fr;}
+    nav .links{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgcanvas"></canvas>
+<div class="vignette"></div>
+<div class="scanline"></div>
+
+<nav>
+  <div class="logo"><span class="p">&gt;</span> ankit-varghade</div>
+  <div class="links">
+    <a href="#about"><span class="idx">01</span>about</a>
+    <a href="#experience"><span class="idx">02</span>experience</a>
+    <a href="#skills"><span class="idx">03</span>skills</a>
+    <a href="#projects"><span class="idx">04</span>focus areas</a>
+    <a href="#contact"><span class="idx">05</span>contact</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section id="hero">
+    <div class="term">
+      <div class="term-bar">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <div class="term-title">ankit@portfolio: ~</div>
+      </div>
+      <div class="term-body" id="typed"></div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="eyebrow"><span class="n">01</span> // about.md</div>
+    <h2>About</h2>
+    <div class="comment-block">
+      <span class="m">/**</span><br>
+      As an IFS Technical Consultant, I develop and deliver enterprise solutions<br>
+      that improve business efficiency across service, finance, procurement,<br>
+      manufacturing, and supply chain operations.<br><br>
+      My approach combines deep technical expertise with practical business<br>
+      understanding. I don't just customize systems — I design solutions. From<br>
+      Oracle SQL and PL/SQL development to IFS customizations, integrations,<br>
+      Business Reports, Lobby development, and automation, I focus on building<br>
+      reliable, scalable applications that solve real business challenges.<br><br>
+      I'm passionate about optimizing system performance, automating manual<br>
+      processes, integrating enterprise applications, and leveraging modern<br>
+      technologies to help organizations get the most out of their IFS platform.<br>
+      <span class="m">*/</span>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="eyebrow"><span class="n">02</span> // git log --experience</div>
+    <h2>Experience</h2>
+
+    <div class="commit">
+      <div>
+        <div class="hash">#c0lligan</div>
+        <div class="date">Aug 2023—now</div>
+      </div>
+      <div>
+        <h3>IFS Techno-Functional Consultant</h3>
+        <div class="role">Culligan Middle East · Dubai, UAE</div>
+        <p>Developing and delivering IFS enterprise solutions across service, finance, procurement, manufacturing and supply chain — customizations, integrations, Business Reports, Lobby/Aurena page development and automation.</p>
+        <div class="diff"><span class="plus">+ integrations</span> · <span class="plus">+ automation</span> · IFS Cloud / Aurena</div>
+      </div>
+    </div>
+    <div class="commit">
+      <div>
+        <div class="hash">#env3c0n</div>
+        <div class="date">Apr 2023—Jun 2023</div>
+      </div>
+      <div>
+        <h3>Software Engineer</h3>
+        <div class="role">Envecon Global Solutions Pvt Ltd</div>
+        <p>Application development and support work spanning SQL/PL-SQL and enterprise system customization.</p>
+      </div>
+    </div>
+    <div class="commit">
+      <div>
+        <div class="hash">#1nf0sys</div>
+        <div class="date">Jan 2022—Mar 2023</div>
+      </div>
+      <div>
+        <h3>System Engineer</h3>
+        <div class="role">Infosys</div>
+        <p>Started career building foundational skills in Oracle SQL/PL-SQL and enterprise systems development.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="eyebrow"><span class="n">03</span> // skills.ts</div>
+    <h2>Skills</h2>
+    <div class="skills-groups">
+      <div class="import-line"><span class="k">import</span> { <span class="b">SQL, PLSQL, Java, HTML, CSS, JavaScript</span> } <span class="k">from</span> <span class="s">'languages'</span>;</div>
+      <div class="import-line"><span class="k">import</span> { <span class="b">ReportDevelopment, AurenaPages, Integrations</span> } <span class="k">from</span> <span class="s">'ifs-platform'</span>;</div>
+      <div class="import-line"><span class="k">import</span> { <span class="b">Postman, Salesforce</span> } <span class="k">from</span> <span class="s">'tools'</span>;</div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="eyebrow"><span class="n">04</span> // focus-areas</div>
+    <h2>Focus Areas</h2>
+    <div class="repo">
+      <div class="repo-top"><span class="repo-icon">⌘</span><h3>ifs-reports</h3><span class="lang">Reports Development</span></div>
+      <p>Designing and building custom Reports inside IFS to give teams visibility they didn't have before.</p>
+    </div>
+    <div class="repo">
+      <div class="repo-top"><span class="repo-icon">⌘</span><h3>ifs-customisation</h3><span class="lang">IFS Cloud</span></div>
+      <p>Tailoring IFS modules, screens and workflows to match how a business actually operates, without breaking upgrade paths.</p>
+    </div>
+    <div class="repo">
+      <div class="repo-top"><span class="repo-icon">⌘</span><h3>aurena-lobby-development</h3><span class="lang">Aurena</span></div>
+      <p>Building Lobby pages and Aurena UI customizations tailored to how specific teams actually work.</p>
+    </div>
+    <div class="repo">
+      <div class="repo-top"><span class="repo-icon">⌘</span><h3>enterprise-integrations</h3><span class="lang">IFS Integration</span></div>
+      <p>Connecting IFS with other enterprise systems (incl. Salesforce) so data moves without manual re-entry.</p>
+    </div>
+    <div class="repo">
+      <div class="repo-top"><span class="repo-icon">⌘</span><h3>process-automation</h3><span class="lang">PL/SQL</span></div>
+      <p>Automating manual, repetitive processes across service, finance, procurement and supply chain workflows.</p>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="eyebrow"><span class="n">05</span> // contact.sh</div>
+    <h2>Contact</h2>
+    <div class="contact-cta">
+      <div class="small">Get in Touch</div>
+      <div class="large">Let's Build Something Together</div>
+      <div class="medium">Whether you're looking for IFS consultation, custom development, or want to discuss innovative solutions—I'd love to hear from you.</div>
+    </div>
+    <div class="icon-row">
+      <a href="mailto:ankitvarghade@gmail.com" class="icon-btn" title="Email" aria-label="Email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4fd8ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/>
+          <path d="M3 6.5l9 6.5 9-6.5"/>
+        </svg>
+      </a>
+      <a href="https://linkedin.com/in/ankit-v-171517228" target="_blank" class="icon-btn" title="LinkedIn" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="#4fd8ff">
+          <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C21.5 8.65 22 11 22 14.1V21h-4v-6.1c0-1.45-.03-3.3-2-3.3-2 0-2.3 1.57-2.3 3.2V21h-4V9z"/>
+        </svg>
+      </a>
+      <a href="https://linkedin.com/in/ankit-v-171517228" target="_blank" class="icon-btn" title="Website" aria-label="Website">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4fd8ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9s1.3-6.4 3.8-9z"/>
+        </svg>
+      </a>
+    </div>
+    <p style="margin-top:18px; font-size:13px; text-align:center;">Dubai, UAE</p>
+  </section>
+
+  <footer>
+    <div class="left">© 2026 Ankit. Built with passion in the UAE.</div>
+    <div class="right">Software Developer<span class="sep">|</span>IFS Techno-Functional Consultant</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ---------- typing effect ----------
+const typedEl = document.getElementById('typed');
+const lines = [
+  {p:true, text:'whoami'},
+  {out:'ankit-varghade — ifs techno-functional consultant'},
+  {p:true, text:'location --show'},
+  {out:'Dubai, UAE'},
+  {p:true, text:'status --check'},
+  {out:'<span class="string">"building reliable, scalable IFS solutions"</span>'},
+  {comment:'// scroll to explore →'}
+];
+let li=0, ci=0;
+function typeNext(){
+  if(li>=lines.length){ typedEl.insertAdjacentHTML('beforeend','<span class="cursor"></span>'); return; }
+  const line = lines[li];
+  if(line.p){
+    if(ci===0) typedEl.insertAdjacentHTML('beforeend', '<div><span class="prompt">$</span> <span class="typing"></span></div>');
+    const target = typedEl.querySelector('div:last-child .typing');
+    if(ci<line.text.length){ target.textContent += line.text[ci]; ci++; setTimeout(typeNext,35); }
+    else { ci=0; li++; setTimeout(typeNext,250); }
+  } else if(line.out){
+    typedEl.insertAdjacentHTML('beforeend', `<div class="out">${line.out}</div>`);
+    li++; setTimeout(typeNext,400);
+  } else if(line.comment){
+    typedEl.insertAdjacentHTML('beforeend', `<div class="comment">${line.comment}</div>`);
+    li++; setTimeout(typeNext,300);
+  }
+}
+setTimeout(typeNext, 400);
+
+// ---------- THREE.JS: network graph + grid floor ----------
+const canvas = document.getElementById('bgcanvas');
+const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x05070a, 8, 34);
+const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 1.5, 15);
+
+scene.add(new THREE.AmbientLight(0x224466, 1.4));
+const pt1 = new THREE.PointLight(0x4fd8ff, 3, 40); pt1.position.set(6,6,6); scene.add(pt1);
+const pt2 = new THREE.PointLight(0xa78bfa, 2, 40); pt2.position.set(-8,-4,4); scene.add(pt2);
+
+// grid floor
+const grid = new THREE.GridHelper(60, 40, 0x4fd8ff, 0x152233);
+grid.position.y = -6;
+grid.material.transparent = true;
+grid.material.opacity = 0.35;
+scene.add(grid);
+
+// wireframe node group (network / commit graph)
+const nodeGroup = new THREE.Group();
+scene.add(nodeGroup);
+
+const nodeGeoms = [
+  new THREE.IcosahedronGeometry(0.5,0),
+  new THREE.OctahedronGeometry(0.55,0),
+  new THREE.TetrahedronGeometry(0.6,0)
+];
+const NODE_COUNT = 16;
+const nodePts = [];
+for(let i=0;i<NODE_COUNT;i++){
+  const geo = nodeGeoms[i%nodeGeoms.length];
+  const color = i%4===0 ? 0xffb454 : (i%3===0 ? 0xa78bfa : 0x4fd8ff);
+  const mat = new THREE.MeshBasicMaterial({color, wireframe:true, transparent:true, opacity:0.75});
+  const mesh = new THREE.Mesh(geo, mat);
+  const pos = new THREE.Vector3(
+    (Math.random()-0.5)*18,
+    (Math.random()-0.5)*12 - i*3.2,
+    (Math.random()-0.5)*8-2
+  );
+  mesh.position.copy(pos);
+  mesh.userData = { drift: Math.random()*Math.PI*2, speed:0.15+Math.random()*0.25, baseY:pos.y };
+  nodeGroup.add(mesh);
+  nodePts.push(mesh);
+}
+
+// connective edges between nearby nodes
+const edgeMat = new THREE.LineBasicMaterial({color:0x4fd8ff, transparent:true, opacity:0.18});
+const edgeGroup = new THREE.Group();
+scene.add(edgeGroup);
+for(let i=0;i<nodePts.length;i++){
+  for(let j=i+1;j<nodePts.length;j++){
+    if(nodePts[i].position.distanceTo(nodePts[j].position) < 7 && Math.random()<0.35){
+      const geo = new THREE.BufferGeometry().setFromPoints([nodePts[i].position, nodePts[j].position]);
+      edgeGroup.add(new THREE.Line(geo, edgeMat));
+    }
+  }
+}
+
+// floating code-glyph sprites
+function makeGlyphTexture(str, color){
+  const c = document.createElement('canvas'); c.width=128; c.height=128;
+  const ctx = c.getContext('2d');
+  ctx.font = '600 64px JetBrains Mono, monospace';
+  ctx.fillStyle = color; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.shadowColor = color; ctx.shadowBlur = 20;
+  ctx.fillText(str, 64, 70);
+  return new THREE.CanvasTexture(c);
+}
+const glyphs = ['{ }','</>','[ ]','01','λ','#'];
+const glyphColors = ['#4fd8ff','#a78bfa','#ffb454','#7ee787'];
+const glyphGroup = new THREE.Group();
+scene.add(glyphGroup);
+glyphs.forEach((g,i)=>{
+  const tex = makeGlyphTexture(g, glyphColors[i%glyphColors.length]);
+  const mat = new THREE.SpriteMaterial({map:tex, transparent:true, opacity:0.55});
+  const spr = new THREE.Sprite(mat);
+  spr.scale.set(1.6,1.6,1);
+  spr.position.set((Math.random()-0.5)*16, (Math.random()-0.5)*14 - i*4, (Math.random()-0.5)*4);
+  spr.userData = { baseY: spr.position.y, speed:0.1+Math.random()*0.2 };
+  glyphGroup.add(spr);
+});
+
+let scrollY = window.scrollY;
+let mouseX=0, mouseY=0;
+window.addEventListener('scroll', ()=> scrollY = window.scrollY);
+window.addEventListener('mousemove', e=>{
+  mouseX = (e.clientX/innerWidth-0.5);
+  mouseY = (e.clientY/innerHeight-0.5);
+});
+
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const docHeight = document.body.scrollHeight - innerHeight;
+  const scrollFrac = docHeight>0 ? scrollY/docHeight : 0;
+
+  nodePts.forEach((m,i)=>{
+    m.rotation.x = t*0.3+i;
+    m.rotation.y = t*0.2+i;
+    m.position.y = m.userData.baseY + scrollFrac*34 + Math.sin(t*0.4+i)*0.3;
+  });
+  glyphGroup.children.forEach((s,i)=>{
+    s.position.y = s.userData.baseY + scrollFrac*34 + Math.sin(t*0.3+i)*0.4;
+    s.material.rotation = Math.sin(t*0.2+i)*0.1;
+  });
+  // refresh edge positions to follow nodes (rebuild sparse — cheap enough at this scale)
+  edgeGroup.children.forEach(line=>{
+    const pos = line.geometry.attributes.position;
+    // find matching node pairs by proximity to original endpoints is costly; instead just let edges fade with graph drift subtly
+  });
+  edgeGroup.position.y = nodeGroup.position.y;
+
+  grid.position.z = (t*0.4) % 3;
+
+  camera.position.x += (mouseX*1.4 - camera.position.x)*0.03;
+  camera.position.y += (1.5-mouseY*1.2 - camera.position.y)*0.03;
+  camera.lookAt(0, -scrollFrac*2, 0);
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
